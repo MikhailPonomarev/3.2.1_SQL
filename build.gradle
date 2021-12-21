@@ -20,6 +20,7 @@ dependencies {
     testImplementation 'commons-dbutils:commons-dbutils:1.7'
     testImplementation 'mysql:mysql-connector-java:8.0.27'
     testImplementation 'com.codeborne:selenide:5.25.0'
+    testImplementation 'io.rest-assured:rest-assured:4.4.0'
 }
 
 test {
