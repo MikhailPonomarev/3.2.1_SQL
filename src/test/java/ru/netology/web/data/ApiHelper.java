@@ -14,7 +14,8 @@ import java.sql.*;
 import static io.restassured.RestAssured.given;
 
 public class ApiHelper {
-    private ApiHelper() {}
+    private ApiHelper() {
+    }
 
     //метод очистки таблиц auth_codes и cards_transactions
     @SneakyThrows
@@ -30,7 +31,7 @@ public class ApiHelper {
         ) {
             runner.execute(connection, deleteAuth);
             runner.execute(connection, deleteCardTransactions);
-            }
+        }
     }
 
     //метод логина с помощью API
@@ -44,10 +45,7 @@ public class ApiHelper {
                 .log(LogDetail.ALL)
                 .build();
 
-        String loginRequestBody = "{\n" +
-                "  \"login\": \"vasya\",\n" +
-                "  \"password\": \"qwerty123\"\n" +
-                "}";
+        String loginRequestBody = "{ 'login': 'vasya', 'password': 'qwerty123' }";
 
         Response loginResponse = given()
                 .spec(loginSpec)
@@ -59,7 +57,7 @@ public class ApiHelper {
     }
 
     //метод аутентификации с помощью API
-    public static void authByApi() {
+    public static String authByApi() {
         RequestSpecification authSpec = new RequestSpecBuilder()
                 .setBaseUri("http://localhost")
                 .setBasePath("api/auth/verification")
@@ -74,15 +72,16 @@ public class ApiHelper {
         //тело auth запроса
         String authRequestBody = "{ 'login': 'vasya', 'code':" + " '" + authCode + "' }";
 
-        Response authResponse = given()
+        //извлечения токена из ответа
+        String token = given()
                 .spec(authSpec)
                 .body(authRequestBody)
                 .when()
                 .post()
-                .then().extract().response();
-        String smth = authResponse.toString();
-        System.out.println(smth);
-//        //TODO: извлечь токен из ответа auth запроса
+                .then()
+                .statusCode(200)
+                .and().extract().path("token").toString();
+        return token;
     }
 
 }
