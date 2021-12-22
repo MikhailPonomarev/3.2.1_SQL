@@ -9,7 +9,7 @@ import static com.codeborne.selenide.Selenide.open;
 public class LoginTest {
 
     @Test
-    public void test() {
+    public void shouldLoginWithAuthCodeFromDB() {
         var loginPage = open("http://localhost:9999/", LoginPage.class);
         var authInfo = DataHelper.getAuthInfo();
         var verificationPage = loginPage.validLogin(authInfo);

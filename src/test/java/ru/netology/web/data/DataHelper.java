@@ -26,8 +26,14 @@ public class DataHelper {
 
     @SneakyThrows
     public static VerificationCode getVerificationCodeFor(AuthInfo authInfo) {
+        String authCode = DataHelper.getAuthCode();
+        return new VerificationCode(authCode);
+    }
+
+    @SneakyThrows
+    public static String getAuthCode() {
         String codeSQL = "SELECT code FROM auth_codes ORDER BY created DESC LIMIT 1;";
-        int code = 0;
+        String code = null;
 
         try (
                 Connection connection = DriverManager.getConnection(
@@ -37,10 +43,10 @@ public class DataHelper {
         ) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    code = resultSet.getInt(1);
+                    code = resultSet.getString(1);
                 }
             }
         }
-        return new VerificationCode(String.valueOf(code));
+        return code;
     }
 }
