@@ -12,26 +12,11 @@ import org.junit.jupiter.api.Assertions;
 import java.sql.*;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class ApiHelper {
-    private ApiHelper() {
-    }
 
-    //метод очистки таблиц auth_codes и cards_transactions
-    @SneakyThrows
-    public static void clearTables() {
-        QueryRunner runner = new QueryRunner();
-        String deleteAuth = "TRUNCATE TABLE auth_codes;";
-        String deleteCardTransactions = "TRUNCATE TABLE card_transactions;";
-
-        try (
-                Connection connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/app", "app", "pass"
-                );
-        ) {
-            runner.execute(connection, deleteAuth);
-            runner.execute(connection, deleteCardTransactions);
-        }
+    public ApiHelper() {
     }
 
     //метод логина с помощью API
@@ -72,8 +57,8 @@ public class ApiHelper {
         //тело auth запроса
         String authRequestBody = "{ 'login': 'vasya', 'code':" + " '" + authCode + "' }";
 
-        //извлечения токена из ответа
-        String token = given()
+        //извлечение токена из ответа
+        return given()
                 .spec(authSpec)
                 .body(authRequestBody)
                 .when()
@@ -81,7 +66,5 @@ public class ApiHelper {
                 .then()
                 .statusCode(200)
                 .and().extract().path("token").toString();
-        return token;
     }
-
 }
