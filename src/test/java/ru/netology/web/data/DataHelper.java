@@ -12,8 +12,8 @@ public class DataHelper {
 
     @Value
     public static class AuthInfo {
-        private String login;
-        private String password;
+        String login;
+        String password;
     }
 
     public static AuthInfo getAuthInfo() {
@@ -22,7 +22,7 @@ public class DataHelper {
 
     @Value
     public static class VerificationCode {
-        private String code;
+        String code;
     }
 
     public static VerificationCode getVerificationCodeFor(AuthInfo authInfo) {
@@ -66,5 +66,58 @@ public class DataHelper {
             runner.execute(connection, deleteAuth);
             runner.execute(connection, deleteCardTransactions);
         }
+    }
+
+    //методы извлечения баланса карт
+    @SneakyThrows
+    public static int getFirstCardBalance() {
+        String firstCardSQL = "SELECT balance_in_kopecks FROM cards WHERE number = '5559 0000 0000 0001';";
+
+        int balance = 0;
+        try (
+                Connection connection = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/app", "app", "pass"
+                );
+                PreparedStatement preparedStatement = connection.prepareStatement(firstCardSQL);
+        ) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    balance = resultSet.getInt(1);
+                }
+            }
+        }
+        return balance / 100;
+    }
+
+    @SneakyThrows
+    public static int getSecondCardBalance() {
+        String firstCardSQL = "SELECT balance_in_kopecks FROM cards WHERE number = '5559 0000 0000 0002';";
+
+        int balance = 0;
+        try (
+                Connection connection = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/app", "app", "pass"
+                );
+                PreparedStatement preparedStatement = connection.prepareStatement(firstCardSQL);
+        ) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    balance = resultSet.getInt(1);
+                }
+            }
+        }
+        return balance / 100;
+    }
+
+    public static String getFirstCard() {
+        return "5559 0000 0000 0001";
+    }
+
+    public static String getSecondCard() {
+        return "5559 0000 0000 0002";
+    }
+
+    public static String getFalseCard() {
+        return "5559 0000 0000 0003";
     }
 }
