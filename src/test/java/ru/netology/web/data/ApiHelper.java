@@ -42,8 +42,12 @@ public class ApiHelper {
                 .build();
     }
 
-    public static String getAuthRequestBody(String code) {
+    public static String getValidAuthRequestBody(String code) {
         return "{ 'login': 'vasya', 'code':" + " '" + code + "' }";
+    }
+
+    public static String getFalseAuthRequestBody() {
+        return "{ 'login': 'vasya', 'code':" + " '" + "code" + "' }";
     }
 
 
