@@ -51,22 +51,6 @@ public class DataHelper {
         return code;
     }
 
-    //метод очистки таблиц auth_codes и cards_transactions
-    @SneakyThrows
-    public static void clearTables() {
-        QueryRunner runner = new QueryRunner();
-        String deleteAuth = "TRUNCATE TABLE auth_codes;";
-        String deleteCardTransactions = "TRUNCATE TABLE card_transactions;";
-
-        try (
-                Connection connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/app", "app", "pass"
-                );
-        ) {
-            runner.execute(connection, deleteAuth);
-            runner.execute(connection, deleteCardTransactions);
-        }
-    }
 
     //методы извлечения баланса карт
     @SneakyThrows

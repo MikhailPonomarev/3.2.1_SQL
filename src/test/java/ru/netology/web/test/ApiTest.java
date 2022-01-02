@@ -12,44 +12,43 @@ import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInC
 
 public class ApiTest {
     private RequestSpecification loginSpec = ApiHelper.getLoginSpec();
-    private String loginRequestBody = ApiHelper.validLoginRequest();
+    private String validLoginRequest = ApiHelper.validLoginRequest();
     private String falseLoginRequestBody = ApiHelper.falseLoginRequest();
+    private String authCode = DataHelper.getAuthCode();
     private String falseAuthRequestBody = ApiHelper.getFalseAuthRequestBody();
     private RequestSpecification authSpec = ApiHelper.getAuthSpec();
+    private String token = ApiHelper.getToken();
     private String firstCard = DataHelper.getFirstCard();
     private String secondCard = DataHelper.getSecondCard();
     private String falseCard = DataHelper.getFalseCard();
 
-    @BeforeAll
-    public static void deleteSqlData() {
-        DataHelper.clearTables();
-    }
 
     @Test
-    public void moneyTransferFromFirstCardToSecond() {
-        //логин
+    public void validLogin() {
         given()
                 .spec(loginSpec)
-                .body(loginRequestBody)
+                .body(validLoginRequest)
                 .when()
                 .post()
                 .then()
                 .statusCode(200);
+    }
 
-        //аутентификация
-        String authCode = DataHelper.getAuthCode();
+    @Test
+    public void validAuth() {
         String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
 
-        String token = given()
+        given()
                 .spec(authSpec)
                 .body(authRequestBody)
                 .when()
                 .post()
                 .then()
-                .statusCode(200)
-                .and().extract().path("token").toString();
+                .statusCode(200);
+    }
 
-        //просмотр данных карт
+    @Test
+    public void viewCardsData() {
         given()
                 .headers(
                         "Authorization",
@@ -64,8 +63,10 @@ public class ApiTest {
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body(matchesJsonSchemaInClasspath("cards.schema.json"));
+    }
 
-        //перевод с карты на карту
+    @Test
+    public void moneyTransferFromFirstCardToSecond() {
         int amount = 2000;
         String transferRequestBody = ApiHelper.getTransferRequestBody(firstCard, secondCard, amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
@@ -95,45 +96,6 @@ public class ApiTest {
 
     @Test
     public void moneyTransferFromSecondCardToFirst() {
-        //логин
-        given()
-                .spec(loginSpec)
-                .body(loginRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        //аутентификация
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        String token = given()
-                .spec(authSpec)
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .and().extract().path("token").toString();
-
-        //просмотр данных карт
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(matchesJsonSchemaInClasspath("cards.schema.json"));
-
-        //перевод с карты на карту
         int amount = 2000;
         String transferRequestBody = ApiHelper.getTransferRequestBody(secondCard, firstCard, amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
@@ -163,45 +125,6 @@ public class ApiTest {
 
     @Test
     public void transferOverLimit() {
-        //логин
-        given()
-                .spec(loginSpec)
-                .body(loginRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        //аутентификация
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        String token = given()
-                .spec(authSpec)
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .and().extract().path("token").toString();
-
-        //просмотр данных карт
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(matchesJsonSchemaInClasspath("cards.schema.json"));
-
-        //перевод с карты на карту
         int firstCardBalance = DataHelper.getFirstCardBalance();
         int secondCardBalance = DataHelper.getSecondCardBalance();
         int amount = firstCardBalance + 1;
@@ -231,45 +154,6 @@ public class ApiTest {
 
     @Test
     public void transferFromNotExistingCard() {
-        //логин
-        given()
-                .spec(loginSpec)
-                .body(loginRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        //аутентификация
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        String token = given()
-                .spec(authSpec)
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .and().extract().path("token").toString();
-
-        //просмотр данных карт
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(matchesJsonSchemaInClasspath("cards.schema.json"));
-
-        //перевод с карты на карту
         int amount = 2000;
         String transferRequestBody = ApiHelper.getTransferRequestBody(falseCard, firstCard, amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
@@ -296,45 +180,6 @@ public class ApiTest {
 
     @Test
     public void transferToNotExistingCard() {
-        //логин
-        given()
-                .spec(loginSpec)
-                .body(loginRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        //аутентификация
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        String token = given()
-                .spec(authSpec)
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200)
-                .and().extract().path("token").toString();
-
-        //просмотр данных карт
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(matchesJsonSchemaInClasspath("cards.schema.json"));
-
-        //перевод с карты на карту
         int amount = 2000;
         String transferRequestBody = ApiHelper.getTransferRequestBody(secondCard, falseCard, amount);
         int secondCardBalance = DataHelper.getSecondCardBalance();
@@ -383,7 +228,7 @@ public class ApiTest {
                 .statusCode(400)
                 .and().extract().path("code").toString();
 
-        assertEquals(response, "SERVER_ERROR");
+        assertEquals(response, "AUTH_INVALID");
     }
 
     @Test

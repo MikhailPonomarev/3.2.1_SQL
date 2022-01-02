@@ -5,10 +5,10 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
+import static io.restassured.RestAssured.given;
+
 
 public class ApiHelper {
-
-
     //спецификация API логина
     public static RequestSpecification getLoginSpec() {
         return new RequestSpecBuilder()
@@ -48,6 +48,18 @@ public class ApiHelper {
 
     public static String getFalseAuthRequestBody() {
         return "{ 'login': 'vasya', 'code':" + " '" + "code" + "' }";
+    }
+
+
+    public static String getToken() {
+        return given()
+                .spec(getAuthSpec())
+                .body(getValidAuthRequestBody(DataHelper.getAuthCode()))
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .and().extract().path("token").toString();
     }
 
 
