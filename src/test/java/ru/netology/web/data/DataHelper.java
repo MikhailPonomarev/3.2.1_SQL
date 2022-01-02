@@ -2,7 +2,6 @@ package ru.netology.web.data;
 
 import lombok.SneakyThrows;
 import lombok.Value;
-import org.apache.commons.dbutils.QueryRunner;
 
 import java.sql.*;
 
@@ -18,6 +17,16 @@ public class DataHelper {
 
     public static AuthInfo getAuthInfo() {
         return new AuthInfo("vasya", "qwerty123");
+    }
+
+    @Value
+    public static class falseAuthInfo {
+        String login;
+        String password;
+    }
+
+    public static falseAuthInfo getFalseAuthInfo() {
+        return new falseAuthInfo("vasya", "pass");
     }
 
     @Value
@@ -49,6 +58,27 @@ public class DataHelper {
             }
         }
         return code;
+    }
+
+    //метод получения статуса пользователя из БД
+    @SneakyThrows
+    public static String getUserStatus() {
+        String statusSQL = "SELECT status FROM users WHERE login = 'vasya';";
+        String status = null;
+
+        try (
+                Connection connection = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/app", "app", "pass"
+                );
+                PreparedStatement preparedStatement = connection.prepareStatement(statusSQL);
+        ) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    status = resultSet.getString(1);
+                }
+            }
+        }
+        return status;
     }
 
 
