@@ -11,10 +11,9 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class ApiTest {
-    private RequestSpecification loginSpec = ApiHelper.getLoginSpec();
-    private String validLoginRequest = ApiHelper.validLoginRequest();
+    private static RequestSpecification loginSpec = ApiHelper.getLoginSpec();
+    private static String validLoginRequest = ApiHelper.validLoginRequest();
     private String falseLoginRequestBody = ApiHelper.falseLoginRequest();
-    private String authCode = DataHelper.getAuthCode();
     private String falseAuthRequestBody = ApiHelper.getFalseAuthRequestBody();
     private RequestSpecification authSpec = ApiHelper.getAuthSpec();
     private String token = ApiHelper.getToken();
@@ -23,8 +22,8 @@ public class ApiTest {
     private String falseCard = DataHelper.getFalseCard();
 
 
-    @Test
-    public void validLogin() {
+    @BeforeAll
+    static void validLogin() {
         given()
                 .spec(loginSpec)
                 .body(validLoginRequest)
@@ -36,6 +35,7 @@ public class ApiTest {
 
     @Test
     public void validAuth() {
+        String authCode = DataHelper.getAuthCode();
         String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
 
         given()
