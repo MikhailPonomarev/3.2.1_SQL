@@ -15,7 +15,7 @@ public class ApiTest {
     private static String validLoginRequest = ApiHelper.validLoginRequest();
     private String falseLoginRequestBody = ApiHelper.falseLoginRequest();
     private String falseAuthRequestBody = ApiHelper.getFalseAuthRequestBody();
-    private RequestSpecification authSpec = ApiHelper.getAuthSpec();
+    private static RequestSpecification authSpec = ApiHelper.getAuthSpec();
     private String token = ApiHelper.getToken();
     private String firstCard = DataHelper.getFirstCard();
     private String secondCard = DataHelper.getSecondCard();
@@ -23,7 +23,7 @@ public class ApiTest {
 
 
     @BeforeAll
-    static void validLogin() {
+    static void validLoginAndAuth() {
         given()
                 .spec(loginSpec)
                 .body(validLoginRequest)
@@ -31,10 +31,7 @@ public class ApiTest {
                 .post()
                 .then()
                 .statusCode(200);
-    }
 
-    @Test
-    public void validAuth() {
         String authCode = DataHelper.getAuthCode();
         String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
 
@@ -46,6 +43,7 @@ public class ApiTest {
                 .then()
                 .statusCode(200);
     }
+
 
     @Test
     public void viewCardsData() {
