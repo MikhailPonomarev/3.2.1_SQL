@@ -51,7 +51,7 @@ public class ApiHelper {
     }
 
 
-    public static String getToken() {
+    public static String getValidToken() {
         return given()
                 .spec(getAuthSpec())
                 .body(getValidAuthRequestBody(DataHelper.getAuthCode()))
@@ -62,9 +62,35 @@ public class ApiHelper {
                 .and().extract().path("token").toString();
     }
 
+    public static String getFalseToken() {
+        return "token";
+    }
+
 
     //тело запроса денежного перевода
     public static String getTransferRequestBody(String fromCard, String toCard, int amount) {
         return "{'from': " + "'" + fromCard + "'" + ", " + "'to': " + "'" + toCard + "'" + ", " + "'amount': " + amount + "}";
+    }
+
+    //метод валидного логина и аутентификации
+    public static void validLoginAndAuth() {
+        given()
+                .spec(getLoginSpec())
+                .body(validLoginRequest())
+                .when()
+                .post()
+                .then()
+                .statusCode(200);
+
+        String authCode = DataHelper.getAuthCode();
+        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
+
+        given()
+                .spec(getLoginSpec())
+                .body(authRequestBody)
+                .when()
+                .post()
+                .then()
+                .statusCode(200);
     }
 }

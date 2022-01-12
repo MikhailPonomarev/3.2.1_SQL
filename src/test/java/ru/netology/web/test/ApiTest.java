@@ -1,7 +1,6 @@
 package ru.netology.web.test;
 
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import ru.netology.web.data.ApiHelper;
 import ru.netology.web.data.DataHelper;
@@ -11,37 +10,12 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class ApiTest {
-    private static RequestSpecification loginSpec = ApiHelper.getLoginSpec();
-    private static String validLoginRequest = ApiHelper.validLoginRequest();
-    private String falseLoginRequestBody = ApiHelper.falseLoginRequest();
-    private String falseAuthRequestBody = ApiHelper.getFalseAuthRequestBody();
-    private static RequestSpecification authSpec = ApiHelper.getAuthSpec();
-    private String token = ApiHelper.getToken();
-    private String firstCard = DataHelper.getFirstCard();
-    private String secondCard = DataHelper.getSecondCard();
-    private String falseCard = DataHelper.getFalseCard();
+    final String token = ApiHelper.getValidToken();
 
 
     @BeforeAll
     static void validLoginAndAuth() {
-        given()
-                .spec(loginSpec)
-                .body(validLoginRequest)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        given()
-                .spec(authSpec)
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
+        ApiHelper.validLoginAndAuth();
     }
 
 
@@ -66,7 +40,8 @@ public class ApiTest {
     @Test
     public void moneyTransferFromFirstCardToSecond() {
         int amount = 2000;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(firstCard, secondCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getFirstCard(), DataHelper.getSecondCard(), amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
         int secondCardBalance = DataHelper.getSecondCardBalance();
 
@@ -95,7 +70,8 @@ public class ApiTest {
     @Test
     public void moneyTransferFromSecondCardToFirst() {
         int amount = 2000;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(secondCard, firstCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFirstCard(), amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
         int secondCardBalance = DataHelper.getSecondCardBalance();
 
@@ -126,7 +102,8 @@ public class ApiTest {
         int firstCardBalance = DataHelper.getFirstCardBalance();
         int secondCardBalance = DataHelper.getSecondCardBalance();
         int amount = firstCardBalance + 1;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(firstCard, secondCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getFirstCard(), DataHelper.getSecondCard(), amount);
 
         given()
                 .body(transferRequestBody)
@@ -153,7 +130,8 @@ public class ApiTest {
     @Test
     public void transferFromNotExistingCard() {
         int amount = 2000;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(falseCard, firstCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getFalseCard(), DataHelper.getFirstCard(), amount);
         int firstCardBalance = DataHelper.getFirstCardBalance();
 
         given()
@@ -179,7 +157,8 @@ public class ApiTest {
     @Test
     public void transferToNotExistingCard() {
         int amount = 2000;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(secondCard, falseCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFalseCard(), amount);
         int secondCardBalance = DataHelper.getSecondCardBalance();
 
         given()
@@ -205,8 +184,8 @@ public class ApiTest {
     @Test
     public void loginWithWrongPassword() {
         String response = given()
-                .spec(loginSpec)
-                .body(falseLoginRequestBody)
+                .spec(ApiHelper.getLoginSpec())
+                .body(ApiHelper.falseLoginRequest())
                 .when()
                 .post()
                 .then()
@@ -218,8 +197,8 @@ public class ApiTest {
     @Test
     public void authWithFalseAuthCode() {
         String response = given()
-                .spec(authSpec)
-                .body(falseAuthRequestBody)
+                .spec(ApiHelper.getAuthSpec())
+                .body(ApiHelper.getFalseAuthRequestBody())
                 .when()
                 .post()
                 .then()
@@ -249,9 +228,11 @@ public class ApiTest {
 
     @Test
     public void transferWithWrongToken() {
-        String token = "token";
+        String token = ApiHelper.getFalseToken();
+
         int amount = 2000;
-        String transferRequestBody = ApiHelper.getTransferRequestBody(secondCard, firstCard, amount);
+        String transferRequestBody = ApiHelper
+                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFirstCard(), amount);
 
         given()
                 .body(transferRequestBody)
