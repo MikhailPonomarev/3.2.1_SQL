@@ -4,10 +4,11 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import org.junit.jupiter.api.Assertions;
 
 import static io.restassured.RestAssured.given;
 
-
+//TODO: реализовать добычу токена 1 раз перед выполнением тестов
 public class ApiHelper {
     //спецификация API логина
     public static RequestSpecification getLoginSpec() {
@@ -34,7 +35,7 @@ public class ApiHelper {
     public static RequestSpecification getAuthSpec() {
         return new RequestSpecBuilder()
                 .setBaseUri("http://localhost")
-                .setBasePath("api/auth/verification")
+                .setBasePath("/api/auth/verification")
                 .setPort(9999)
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON)
@@ -51,7 +52,27 @@ public class ApiHelper {
     }
 
 
-    public static String getValidToken() {
+    //тело запроса денежного перевода
+
+    public static String getTransferRequestBody(String fromCard, String toCard, int amount) {
+        return "{'from': " + "'" + fromCard + "'" + ", " + "'to': " + "'" + toCard
+                + "'" + ", " + "'amount': " + amount + "}";
+    }
+
+    //методы валидного логина и аутентификации с извлечением токена
+    public static void validLogin() {
+        int statusCode = given()
+                .spec(getLoginSpec())
+                .body(validLoginRequest())
+                .when()
+                .post()
+                .then()
+                .extract().statusCode();
+
+        Assertions.assertEquals(200, statusCode);
+    }
+
+    public static String authAndGetValidToken() {
         return given()
                 .spec(getAuthSpec())
                 .body(getValidAuthRequestBody(DataHelper.getAuthCode()))
@@ -64,33 +85,5 @@ public class ApiHelper {
 
     public static String getFalseToken() {
         return "token";
-    }
-
-
-    //тело запроса денежного перевода
-    public static String getTransferRequestBody(String fromCard, String toCard, int amount) {
-        return "{'from': " + "'" + fromCard + "'" + ", " + "'to': " + "'" + toCard + "'" + ", " + "'amount': " + amount + "}";
-    }
-
-    //метод валидного логина и аутентификации
-    public static void validLoginAndAuth() {
-        given()
-                .spec(getLoginSpec())
-                .body(validLoginRequest())
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
-
-        String authCode = DataHelper.getAuthCode();
-        String authRequestBody = ApiHelper.getValidAuthRequestBody(authCode);
-
-        given()
-                .spec(getLoginSpec())
-                .body(authRequestBody)
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
     }
 }

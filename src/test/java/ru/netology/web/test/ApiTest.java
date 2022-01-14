@@ -10,17 +10,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class ApiTest {
-    final String token = ApiHelper.getValidToken();
-
 
     @BeforeAll
     static void validLoginAndAuth() {
-        ApiHelper.validLoginAndAuth();
+        ApiHelper.validLogin();
     }
 
 
     @Test
     public void viewCardsData() {
+        String token = ApiHelper.authAndGetValidToken();
+
         given()
                 .headers(
                         "Authorization",
@@ -39,6 +39,8 @@ public class ApiTest {
 
     @Test
     public void moneyTransferFromFirstCardToSecond() {
+        String token = ApiHelper.authAndGetValidToken();
+
         int amount = 2000;
         String transferRequestBody = ApiHelper
                 .getTransferRequestBody(DataHelper.getFirstCard(), DataHelper.getSecondCard(), amount);
@@ -69,6 +71,8 @@ public class ApiTest {
 
     @Test
     public void moneyTransferFromSecondCardToFirst() {
+        String token = ApiHelper.authAndGetValidToken();
+
         int amount = 2000;
         String transferRequestBody = ApiHelper
                 .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFirstCard(), amount);
@@ -99,6 +103,8 @@ public class ApiTest {
 
     @Test
     public void transferOverLimit() {
+        String token = ApiHelper.authAndGetValidToken();
+
         int firstCardBalance = DataHelper.getFirstCardBalance();
         int secondCardBalance = DataHelper.getSecondCardBalance();
         int amount = firstCardBalance + 1;
@@ -129,6 +135,8 @@ public class ApiTest {
 
     @Test
     public void transferFromNotExistingCard() {
+        String token = ApiHelper.authAndGetValidToken();
+
         int amount = 2000;
         String transferRequestBody = ApiHelper
                 .getTransferRequestBody(DataHelper.getFalseCard(), DataHelper.getFirstCard(), amount);
@@ -156,6 +164,8 @@ public class ApiTest {
 
     @Test
     public void transferToNotExistingCard() {
+        String token = ApiHelper.authAndGetValidToken();
+
         int amount = 2000;
         String transferRequestBody = ApiHelper
                 .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFalseCard(), amount);
