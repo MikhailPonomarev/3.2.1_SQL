@@ -1,262 +1,131 @@
 package ru.netology.web.test;
 
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.*;
-import ru.netology.web.data.ApiHelper;
-import ru.netology.web.data.DataHelper;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static io.restassured.RestAssured.given;
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+import static ru.netology.web.data.ApiHelper.*;
+import static ru.netology.web.data.DataHelper.*;
 
 public class ApiTest {
-
     @BeforeAll
-    static void validLoginAndAuth() {
-        ApiHelper.validLogin();
+    static void validLogin() {
+        int response = validLoginRequest(validLoginBody());
+        assertEquals(200, response);
     }
 
 
     @Test
     public void viewCardsData() {
-        String token = ApiHelper.authAndGetValidToken();
-
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(matchesJsonSchemaInClasspath("cards.schema.json"));
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
+        int response = viewCardsRequest(token);
+        assertEquals(200, response);
     }
 
     @Test
     public void moneyTransferFromFirstCardToSecond() {
-        String token = ApiHelper.authAndGetValidToken();
-
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
         int amount = 2000;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getFirstCard(), DataHelper.getSecondCard(), amount);
-        int firstCardBalance = DataHelper.getFirstCardBalance();
-        int secondCardBalance = DataHelper.getSecondCardBalance();
+        String transferRequestBody = getTransferRequestBody(getFirstCard(), getSecondCard(), amount);
+        int firstCardBalance = getFirstCardBalance();
+        int secondCardBalance = getSecondCardBalance();
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(200);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(200, response);
 
-        int firstBalanceAfterTransfer = DataHelper.getFirstCardBalance();
-        int secondBalanceAfterTransfer = DataHelper.getSecondCardBalance();
-
+        int firstBalanceAfterTransfer = getFirstCardBalance();
+        int secondBalanceAfterTransfer = getSecondCardBalance();
         assertEquals((secondCardBalance + amount), secondBalanceAfterTransfer);
         assertEquals((firstCardBalance - amount), firstBalanceAfterTransfer);
     }
 
     @Test
     public void moneyTransferFromSecondCardToFirst() {
-        String token = ApiHelper.authAndGetValidToken();
-
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
         int amount = 2000;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFirstCard(), amount);
-        int firstCardBalance = DataHelper.getFirstCardBalance();
-        int secondCardBalance = DataHelper.getSecondCardBalance();
+        String transferRequestBody = getTransferRequestBody(getSecondCard(), getFirstCard(), amount);
+        int firstCardBalance = getFirstCardBalance();
+        int secondCardBalance = getSecondCardBalance();
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(200);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(200, response);
 
-        int firstBalanceAfterTransfer = DataHelper.getFirstCardBalance();
-        int secondBalanceAfterTransfer = DataHelper.getSecondCardBalance();
-
+        int firstBalanceAfterTransfer = getFirstCardBalance();
+        int secondBalanceAfterTransfer = getSecondCardBalance();
         assertEquals((firstCardBalance + amount), firstBalanceAfterTransfer);
         assertEquals((secondCardBalance - amount), secondBalanceAfterTransfer);
     }
 
     @Test
     public void transferOverLimit() {
-        String token = ApiHelper.authAndGetValidToken();
-
-        int firstCardBalance = DataHelper.getFirstCardBalance();
-        int secondCardBalance = DataHelper.getSecondCardBalance();
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
+        int firstCardBalance = getFirstCardBalance();
+        int secondCardBalance = getSecondCardBalance();
         int amount = firstCardBalance + 1;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getFirstCard(), DataHelper.getSecondCard(), amount);
+        String transferRequestBody = getTransferRequestBody(getFirstCard(), getSecondCard(), amount);
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(200);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(200, response);
 
-        int firstBalanceAfterTransfer = DataHelper.getFirstCardBalance();
-        int secondBalanceAfterTransfer = DataHelper.getSecondCardBalance();
-
+        int firstBalanceAfterTransfer = getFirstCardBalance();
+        int secondBalanceAfterTransfer = getSecondCardBalance();
         assertEquals((secondCardBalance + amount), secondBalanceAfterTransfer);
         assertTrue(firstBalanceAfterTransfer >= 0);
     }
 
     @Test
     public void transferFromNotExistingCard() {
-        String token = ApiHelper.authAndGetValidToken();
-
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
         int amount = 2000;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getFalseCard(), DataHelper.getFirstCard(), amount);
-        int firstCardBalance = DataHelper.getFirstCardBalance();
+        String transferRequestBody = getTransferRequestBody(getFalseCard(), getFirstCard(), amount);
+        int firstCardBalance = getFirstCardBalance();
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(400);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(400, response);
 
-        int firstBalanceAfterTransfer = DataHelper.getFirstCardBalance();
-
+        int firstBalanceAfterTransfer = getFirstCardBalance();
         assertEquals(firstCardBalance, firstBalanceAfterTransfer);
     }
 
     @Test
     public void transferToNotExistingCard() {
-        String token = ApiHelper.authAndGetValidToken();
-
+        String token = authAndGetToken(validAuthRequestBody(getAuthCode()));
         int amount = 2000;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFalseCard(), amount);
-        int secondCardBalance = DataHelper.getSecondCardBalance();
+        String transferRequestBody = getTransferRequestBody(getSecondCard(), getFalseCard(), amount);
+        int secondCardBalance = getSecondCardBalance();
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(400);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(400, response);
 
-        int secondCardAfterTransfer = DataHelper.getSecondCardBalance();
-
+        int secondCardAfterTransfer = getSecondCardBalance();
         assertEquals(secondCardBalance, secondCardAfterTransfer);
     }
 
     @Test
     public void loginWithWrongPassword() {
-        String response = given()
-                .spec(ApiHelper.getLoginSpec())
-                .body(ApiHelper.falseLoginRequest())
-                .when()
-                .post()
-                .then()
-                .statusCode(400).extract().response().path("code").toString();
-
-        assertEquals(response, "AUTH_INVALID");
+        String response = falseLoginRequest(falseLoginBody());
+        assertEquals("AUTH_INVALID", response);
     }
 
     @Test
     public void authWithFalseAuthCode() {
-        String response = given()
-                .spec(ApiHelper.getAuthSpec())
-                .body(ApiHelper.getFalseAuthRequestBody())
-                .when()
-                .post()
-                .then()
-                .statusCode(400)
-                .and().extract().path("code").toString();
-
+        String response = falseAuth(falseAuthRequestBody());
         assertEquals(response, "AUTH_INVALID");
     }
 
     @Test
     public void viewCardsWithWrongToken() {
-        String token = "token";
-
-        given()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .get("http://localhost:9999/api/cards")
-                .then()
-                .statusCode(401);
+        String token = getFalseToken();
+        int response = falseViewCardsRequest(token);
+        assertEquals(401, response);
     }
 
     @Test
     public void transferWithWrongToken() {
-        String token = ApiHelper.getFalseToken();
-
+        String token = getFalseToken();
         int amount = 2000;
-        String transferRequestBody = ApiHelper
-                .getTransferRequestBody(DataHelper.getSecondCard(), DataHelper.getFirstCard(), amount);
+        String transferRequestBody = getTransferRequestBody(getSecondCard(), getFirstCard(), amount);
 
-        given()
-                .body(transferRequestBody)
-                .and()
-                .headers(
-                        "Authorization",
-                        "Bearer " + token,
-                        "Content-Type",
-                        ContentType.JSON,
-                        "Accept",
-                        ContentType.JSON)
-                .when()
-                .post("http://localhost:9999/api/transfer")
-                .then()
-                .statusCode(401);
+        int response = moneyTransferRequest(transferRequestBody, token);
+        assertEquals(401, response);
     }
 }
